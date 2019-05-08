@@ -16,7 +16,7 @@ class grid:
 	"""
 
 	def __init__(self, read_models, tracks, outdir, observables, estimators,
-	 stars_obs_qty, stars_obserr_qty, starname=None):
+	 stars_obs_qty, stars_obserr_qty, starname=None, star_age_col="star_age"):
 
 		"""
 		Initialize a parameter estimation class.
@@ -57,6 +57,9 @@ class grid:
 		starname: list of str, default: list of ascending natural numbers
 			The starnames to differentiate folders.
 
+		star_age_col: str, default: "star_age"
+			The col name of the stellar age in tracks.
+
 		"""
 
 		self.read_models = read_models
@@ -66,6 +69,7 @@ class grid:
 		self.estimators = estimators
 		self.stars_obs_qty = stars_obs_qty
 		self.stars_obserr_qty = stars_obserr_qty
+		self.star_age = star_age_col
 
 		if not os.path.exists(self.outdir):
 			os.mkdir(self.outdir)
@@ -168,7 +172,7 @@ class grid:
 
 			# calculate posterior
 			for istar in range(Nstar):
-				lifespan = (table["star_age"][2:] - table["star_age"][0:-2])/2.0
+				lifespan = (table[self.star_age][2:] - table[self.star_age][0:-2])/2.0
 				prior = lifespan/np.sum(lifespan)
 				lnprior = np.log(prior)
 				chi2 = np.zeros(Nmodel)
