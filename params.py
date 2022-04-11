@@ -33,6 +33,8 @@ user_setup_params = {
 
 # if True, output corner plots. 
 "if_plot": True, 
+# if True, output the echelle diagram for top 10 models measured by chi2_seismic. 
+"if_plot_echelle": True,
 # estimator names to appear in corner plots. suggests only keep essentials.
 "estimators_to_plot": ['star_mass', 'luminosity', 'radius', 'Teff', \
                        'Zinit'], 

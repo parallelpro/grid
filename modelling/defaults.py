@@ -24,6 +24,7 @@ default_global_params = {
 
     # 2 - output settings
     "if_plot": True, 
+    "if_plot_echelle": True,
     "estimators_to_plot": None,
     "if_data": True, 
 

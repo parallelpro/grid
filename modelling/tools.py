@@ -290,9 +290,10 @@ def plot_HR_diagrams(samples, estimates, zvals=None,
 
     return fig 
 
-def plot_seis_echelles(obs_freq, obs_efreq, obs_l, model_parameters, model_chi2, Dnu, 
-                        if_correct_surface=True, surface_correction_formula='cubic'):
+def plot_seis_echelles(obs_freq, obs_e_freq, obs_l, mod_freq, model_chi2, Dnu, 
+                        mod_freq_sc=None):
     
+    if_correct_surface =  ~(mod_freq_sc is None)
     if if_correct_surface:
         fig, axes = plt.subplots(figsize=(12,5), nrows=1, ncols=2, squeeze=False)
     else:
@@ -314,43 +315,33 @@ def plot_seis_echelles(obs_freq, obs_efreq, obs_l, model_parameters, model_chi2,
     norm = matplotlib.colors.Normalize(vmin=np.min(model_chi2), vmax=np.max(model_chi2))
     cmap = plt.cm.get_cmap('gray')
     for imod in np.argsort(model_chi2)[::-1]:
-        mod_freq_uncor, mod_l_uncor, mod_n = model_parameters['mode_freq'][imod], model_parameters['mode_l'][imod], model_parameters['mode_n'][imod]
-        if if_correct_surface:
-            mod_inertia, mod_acfreq = model_parameters['mode_inertia'][imod], model_parameters['acoustic_cutoff'][imod]
-            if if_correct_surface:
-                mod_freq_cor = get_surface_correction(obs_freq, obs_l, np.array(mod_freq_uncor), np.array(mod_l_uncor), mod_inertia, mod_acfreq, formula=surface_correction_formula)
-                # if (mod_freq_cor is None): return fig
-            else:
-                mod_freq_cor = np.array(mod_freq_uncor)
-            mod_freq_cor, mod_l_cor = np.array(mod_freq_cor), np.array(mod_l_uncor)
-
         for l in np.array(np.unique(obs_l), dtype=int):
             # axes[0] plot uncorrected frequencies
-            z = np.zeros(np.sum(mod_l_uncor==l))+model_chi2[imod]
+            z = np.zeros(np.sum(obs_l==l))+model_chi2[imod]
             scatterstyles = {'marker':markers[l], 'edgecolors':cmap(norm(z)), 'c':'None', 'zorder':2}
-            axes[0,0].scatter(mod_freq_uncor[mod_l_uncor==l] % Dnu, mod_freq_uncor[mod_l_uncor==l], **scatterstyles)
-            axes[0,0].scatter(mod_freq_uncor[mod_l_uncor==l] % Dnu + Dnu, mod_freq_uncor[mod_l_uncor==l], **scatterstyles)
+            axes[0,0].scatter(mod_freq[imod,:][obs_l==l] % Dnu, mod_freq[imod,:][obs_l==l], **scatterstyles)
+            axes[0,0].scatter(mod_freq[imod,:][obs_l==l] % Dnu + Dnu, mod_freq[imod,:][obs_l==l], **scatterstyles)
             if if_correct_surface:
                 # axes[1] plot surface corrected frequencies
-                axes[0,1].scatter(mod_freq_cor[mod_l_cor==l] % Dnu, mod_freq_cor[mod_l_cor==l], **scatterstyles)
-                axes[0,1].scatter(mod_freq_cor[mod_l_cor==l] % Dnu + Dnu, mod_freq_cor[mod_l_cor==l], **scatterstyles)
+                axes[0,1].scatter(mod_freq_sc[imod,:][obs_l==l] % Dnu, mod_freq_sc[imod,:][obs_l==l], **scatterstyles)
+                axes[0,1].scatter(mod_freq_sc[imod,:][obs_l==l] % Dnu + Dnu, mod_freq_sc[imod,:][obs_l==l], **scatterstyles)
 
-        # label the radial orders n for l=0 modes
-        if (imod == np.argsort(model_chi2)[0]) & np.sum(mod_l_uncor==0):
-            for idxn, n in enumerate(mod_n[mod_l_uncor==0]):
-                nstr = '{:0.0f}'.format(n)
-                # axes[0] plot uncorrected frequencies
-                textstyles = {'fontsize':12, 'ha':'center', 'va':'center', 'zorder':100, 'color':'purple'}
-                axes[0,0].text((mod_freq_uncor[mod_l_uncor==0][idxn]+0.05*Dnu) % Dnu, mod_freq_uncor[mod_l_uncor==0][idxn]+0.05*Dnu, nstr, **textstyles)
-                axes[0,0].text((mod_freq_uncor[mod_l_uncor==0][idxn]+0.05*Dnu) % Dnu + Dnu, mod_freq_uncor[mod_l_uncor==0][idxn]+0.05*Dnu, nstr, **textstyles)
-                if if_correct_surface:
-                    # axes[1] plot surface corrected frequencies
-                    axes[0,1].text((mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu) % Dnu, mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu, nstr, **textstyles)
-                    axes[0,1].text((mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu) % Dnu + Dnu, mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu, nstr, **textstyles)
+        # # label the radial orders n for l=0 modes
+        # if (imod == np.argsort(model_chi2)[0]) & np.sum(mod_l_uncor==0):
+        #     for idxn, n in enumerate(mod_n[mod_l_uncor==0]):
+        #         nstr = '{:0.0f}'.format(n)
+        #         # axes[0] plot uncorrected frequencies
+        #         textstyles = {'fontsize':12, 'ha':'center', 'va':'center', 'zorder':100, 'color':'purple'}
+        #         axes[0,0].text((mod_freq[imod,:][mod_l_uncor==0][idxn]+0.05*Dnu) % Dnu, mod_freq[imod,:][mod_l_uncor==0][idxn]+0.05*Dnu, nstr, **textstyles)
+        #         axes[0,0].text((mod_freq[imod,:][mod_l_uncor==0][idxn]+0.05*Dnu) % Dnu + Dnu, mod_freq[imod,:][mod_l_uncor==0][idxn]+0.05*Dnu, nstr, **textstyles)
+        #         if if_correct_surface:
+        #             # axes[1] plot surface corrected frequencies
+        #             axes[0,1].text((mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu) % Dnu, mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu, nstr, **textstyles)
+        #             axes[0,1].text((mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu) % Dnu + Dnu, mod_freq_cor[mod_l_cor==0][idxn]+0.05*Dnu, nstr, **textstyles)
 
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.02, 0.7])
-    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='gray'),cax=cbar_ax).set_label('chi2_seismic')
+    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='gray'),cax=cbar_ax).set_label('chi2')
 
     for ax in axes.reshape(-1):
         ax.axis([0., Dnu*2, np.min(obs_freq)-Dnu*4, np.max(obs_freq)+Dnu*4])

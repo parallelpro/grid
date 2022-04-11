@@ -175,10 +175,12 @@ class grid:
                     # initialize the variables to calculate & save
                     Dnu_freq = np.zeros(Nmodel, dtype=float) + np.nan
                     diff_freq = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
+                    mod_freq = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
                     if self.if_correct_surface:
                         surface_parameters = np.zeros((Nmodel,self.Nsurface), dtype=float) + np.nan
                         Dnu_freq_sc = np.zeros(Nmodel, dtype=float) + np.nan
                         diff_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
+                        mod_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
 
 
                     for imod in range(Nmodel):
@@ -193,7 +195,7 @@ class grid:
                         _, _, _, mode_freq_matched, mode_l_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l)
                         Dnu_freq[imod] = get_model_Dnu(mode_freq_matched, mode_l_matched, self.Dnu[istar], self.numax[istar])
                         diff_freq[imod, :] = (obs_freq-mode_freq_matched)**2.0
-
+                        mod_freq[imod, :] = mode_freq_matched
 
                         # get 1) Dnu, 2) squared differences, 
                         # but for the surface correction version, if there is any
@@ -215,6 +217,7 @@ class grid:
                             _, _, _, mode_freq_sc_matched, mode_l_sc_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq_sc, mode_l)
                             Dnu_freq_sc[imod] = get_model_Dnu(mode_freq_sc_matched, mode_l_sc_matched, self.Dnu[istar], self.numax[istar])
                             diff_freq_sc[imod, :] = (obs_freq-mode_freq_sc_matched)**2.0
+                            mod_freq_sc[imod, :] = mode_freq_sc_matched
 
                     idx_seismic = (np.abs((Dnu_freq-self.Dnu[istar])/self.Dnu[istar])<0.2 )
                     if self.if_correct_surface: idx_seismic = idx_seismic & np.isfinite(Dnu_freq_sc)
@@ -235,10 +238,12 @@ class grid:
 
                 if self.if_seismic:
                     list_of_stardata[istar]['diff_freq', itrack] = np.array(diff_freq[idx], dtype=float)
+                    list_of_stardata[istar]['mod_freq', itrack] = np.array(mod_freq[idx], dtype=float)
                     list_of_stardata[istar]['Dnu_freq', itrack] = np.array(Dnu_freq[idx], dtype=float)
 
                     if self.if_correct_surface:
                         list_of_stardata[istar]['diff_freq_sc', itrack] = np.array(diff_freq_sc[idx], dtype=float)
+                        list_of_stardata[istar]['mod_freq_sc', itrack] = np.array(mod_freq_sc[idx], dtype=float)
                         list_of_stardata[istar]['Dnu_freq_sc', itrack] = np.array(Dnu_freq_sc[idx], dtype=float)
                         for icol, col in enumerate(self.surface_estimators):
                             list_of_stardata[istar][col, itrack] = np.array(surface_parameters[idx, icol], dtype=float)
@@ -436,25 +441,14 @@ class grid:
                     #     fig.savefig(toutdir+"HR.png")
                     #     plt.close()
 
-                    # # plot echelle diagrams
-                    # if self.if_seismic & self.if_plot_echelle:
-                    #     idx = np.argsort(chi2_seis, axis=0)[:10]
-                    #     if self.if_correct_surface:
-                    #         model_parameters = {'mode_freq': list_of_stardata[istar][self.col_mode_freq][idx], 
-                    #                             'mode_l': list_of_stardata[istar][self.col_mode_l][idx], 
-                    #                             'mode_inertia': list_of_stardata[istar][self.col_mode_inertia][idx], 
-                    #                             'acoustic_cutoff': list_of_stardata[istar][self.col_acoustic_cutoff][idx], 
-                    #                             'mode_n': list_of_stardata[istar][self.col_mode_n][idx]}
-                    #     else:
-                    #         model_parameters = {'mode_freq': list_of_stardata[istar][self.col_mode_freq][idx], 
-                    #                             'mode_l': list_of_stardata[istar][self.col_mode_l][idx], 
-                    #                             'mode_n': list_of_stardata[istar][self.col_mode_n][idx]}
-                    #     fig = plot_seis_echelles(obs_freq[istar], obs_efreq[istar], obs_l[istar], 
-                    #             model_parameters, chi2_seis[idx], Dnu[istar], 
-                    #             if_correct_surface=self.if_correct_surface, 
-                    #             surface_correction_formula=self.surface_correction_formula)
-                    #     fig.savefig(toutdir+"echelle_top10_prob_seismic.png")
-                    #     plt.close()
+                    # plot echelle diagrams
+                    if self.if_seismic & self.if_plot_echelle:
+                        idx = np.argsort(chi2_seismic, axis=0)[:10]
+                        mod_freq_sc = self.stardata[istar]['mod_freq_sc'][idx] if self.if_correct_surface else None
+                        fig = plot_seis_echelles(self.obs_freq[istar], self.obs_e_freq[istar], self.obs_l[istar], 
+                                self.stardata[istar]['mod_freq'][idx], chi2_seismic[idx], self.Dnu[istar], mod_freq_sc=mod_freq_sc)
+                        fig.savefig(toutdir+"echelle_top10_prob_seismic.png")
+                        plt.close()
 
             # write related parameters to file
             if self.if_data:
@@ -480,7 +474,7 @@ class grid:
             if self.if_seismic: 
                 keys = keys + ['chi2_seismic']
                 ls = self.obs_l_uniq[istar]
-                keys = keys + ['Dnu_freq', 'diff_freq']
+                keys = keys + ['Dnu_freq', 'diff_freq', 'mod_freq']
                 keys = keys + ['chi2_seismic_l{:0.0f}'.format(l) for l in ls]
                 keys = keys + ['chi2_seismic_obs_l{:0.0f}'.format(l) for l in ls]
                 if self.if_add_model_error:
@@ -493,7 +487,7 @@ class grid:
                         keys = keys + ['chi2_seismic_obs_reg_l{:0.0f}'.format(l) for l in ls]
                         keys = keys + ['chi2_seismic_obs_nreg_l{:0.0f}'.format(l) for l in ls]
                 if self.if_correct_surface:
-                    keys = keys + ['diff_freq_sc', 'Dnu_freq_sc'] + self.surface_estimators
+                    keys = keys + ['diff_freq_sc', 'mod_freq_sc', 'Dnu_freq_sc'] + self.surface_estimators
             self.keys[istar] = keys
 
 
