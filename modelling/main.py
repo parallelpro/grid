@@ -275,6 +275,9 @@ class grid:
                 for il in range(obs_N_l_uniq):
                     l, idx = obs_l_uniq[il], obs_l_idx[il]
                     # obs_freq[idx], obs_e_freq[idx], diff_freq[idx]
+                    Nnreg = np.sum(idx)-self.Nreg if self.if_reduce_seis_chi2 else 1
+                    Nreg = self.Nreg if self.if_reduce_seis_reg_chi2 else 1
+                    Nmode = np.sum(idx) if self.if_reduce_seis_chi2 else 1
                     if self.if_add_model_error:
                         if self.if_regularize:
                             for il, l in enumerate(obs_l_uniq):
@@ -283,10 +286,10 @@ class grid:
                                     mod_e_freq_reg =  np.percentile(np.mean(diff_freq[:,obs_l_idx[il][:self.Nreg]], axis=1), self.rescale_percentile)
                                 else: #self.add_model_error_method == 2:
                                     mod_e_freq_nreg, mod_e_freq_reg = self.mod_e_freq[istar], self.mod_e_freq[istar]
-                                self.stardata[istar]['chi2_seismic_obs_mod_nreg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][self.Nreg:]]/(obs_e_freq[obs_l_idx[il][self.Nreg:]]**2.0 + mod_e_freq_nreg**2.0), axis=1)
-                                self.stardata[istar]['chi2_seismic_obs_mod_reg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][:self.Nreg]]/(obs_e_freq[obs_l_idx[il][:self.Nreg]]**2.0 + mod_e_freq_reg**2.0), axis=1) 
-                                self.stardata[istar]['chi2_seismic_obs_mod_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/(obs_e_freq[obs_l_idx[il]]**2.0 + mod_e_freq**2.0), axis=1) 
-                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) 
+                                self.stardata[istar]['chi2_seismic_obs_mod_nreg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][self.Nreg:]]/(obs_e_freq[obs_l_idx[il][self.Nreg:]]**2.0 + mod_e_freq_nreg**2.0), axis=1) / Nnreg
+                                self.stardata[istar]['chi2_seismic_obs_mod_reg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][:self.Nreg]]/(obs_e_freq[obs_l_idx[il][:self.Nreg]]**2.0 + mod_e_freq_reg**2.0), axis=1) / Nreg
+                                self.stardata[istar]['chi2_seismic_obs_mod_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/(obs_e_freq[obs_l_idx[il]]**2.0 + mod_e_freq**2.0), axis=1) / Nmode
+                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) / Nmode
                                 self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l)] = (1-self.weight_reg) * self.stardata[istar]['chi2_seismic_obs_mod_nreg_l{:0.0f}'.format(l)] + self.weight_reg * self.stardata[istar]['chi2_seismic_obs_mod_reg_l{:0.0f}'.format(l)]
                         else:
                             for il, l in enumerate(obs_l_uniq):
@@ -294,19 +297,19 @@ class grid:
                                     mod_e_freq =  np.percentile(np.mean(diff_freq[:,obs_l_idx[il]], axis=1), self.rescale_percentile)
                                 else:  #self.add_model_error_method == 2:
                                     mod_e_freq =  self.mod_e_freq[istar]
-                                self.stardata[istar]['chi2_seismic_obs_mod_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/(obs_e_freq[obs_l_idx[il]]**2.0 + mod_e_freq**2.0), axis=1)
-                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1)
+                                self.stardata[istar]['chi2_seismic_obs_mod_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/(obs_e_freq[obs_l_idx[il]]**2.0 + mod_e_freq**2.0), axis=1) / Nmode
+                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) / Nmode
                                 self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l)] = self.stardata[istar]['chi2_seismic_obs_mod_l{:0.0f}'.format(l)]
                     else:
                         if self.if_regularize:
                             for il, l in enumerate(obs_l_uniq):
-                                self.stardata[istar]['chi2_seismic_obs_nreg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][self.Nreg:]]/(obs_e_freq[obs_l_idx[il][self.Nreg:]]**2.0), axis=1) 
-                                self.stardata[istar]['chi2_seismic_obs_reg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][:self.Nreg]]/(obs_e_freq[obs_l_idx[il][:self.Nreg]]**2.0), axis=1) 
-                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) 
+                                self.stardata[istar]['chi2_seismic_obs_nreg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][self.Nreg:]]/(obs_e_freq[obs_l_idx[il][self.Nreg:]]**2.0), axis=1) / Nnreg
+                                self.stardata[istar]['chi2_seismic_obs_reg_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il][:self.Nreg]]/(obs_e_freq[obs_l_idx[il][:self.Nreg]]**2.0), axis=1) / Nreg
+                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) / Nmode
                                 self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l)] = (1-self.weight_reg) * self.stardata[istar]['chi2_seismic_obs_nreg_l{:0.0f}'.format(l)] + self.weight_reg * self.stardata[istar]['chi2_seismic_obs_reg_l{:0.0f}'.format(l)]
                         else:                            
                             for il, l in enumerate(obs_l_uniq):
-                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1)
+                                self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)] = np.sum(diff_freq[:,obs_l_idx[il]]/obs_e_freq[obs_l_idx[il]]**2.0, axis=1) / Nmode
                                 self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l)] = self.stardata[istar]['chi2_seismic_obs_l{:0.0f}'.format(l)]
                     # self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l), :] = ...
                 self.stardata[istar]['chi2_seismic'] = np.sum([self.stardata[istar]['chi2_seismic_l{:0.0f}'.format(l)] for l in obs_l_uniq], axis=0)

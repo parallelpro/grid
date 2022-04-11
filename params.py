@@ -77,6 +77,11 @@ user_setup_params = {
 # mode n (nodes) column name in models
 "col_mode_n": "mode_n", 
 
+# not implemented yet. 
+# if True, use reduced chi2: sum((obs_i-mod_i)**2.0/sig**2.0/Nmode); 
+# if False: use true chi2: sum((obs_i-mod_i)**2.0/sig**2.0)
+"if_reduce_seis_chi2": True, 
+
 
 # if True, correct model frequencies with supported formula, see next.
 "if_correct_surface": True, 
@@ -105,12 +110,8 @@ user_setup_params = {
 "weight_reg": 1, 
 # number of modes that do not apply surface corrections
 "Nreg": 0,
-
-
-# not implemented yet. 
-# if True, use reduced chi2: (obs_i-mod_i)**2.0/sig**2.0/(N-1); 
-# if False: use true chi2: (obs_i-mod_i)**2.0/sig**2.0
-"if_reduce_seis_chi2": False, 
+# if True, use reduced chi2 for low-order modes: sum((obs_i-mod_i)**2.0/sig**2.0/Nmode);
+"if_reduce_seis_reg_chi2": True, 
 
 }
 
