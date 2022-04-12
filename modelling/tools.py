@@ -293,7 +293,7 @@ def plot_HR_diagrams(samples, estimates, zvals=None,
 def plot_seis_echelles(obs_freq, obs_e_freq, obs_l, mod_freq, model_chi2, Dnu, 
                         mod_freq_sc=None):
     
-    if_correct_surface =  ~(mod_freq_sc is None)
+    if_correct_surface =  not (mod_freq_sc is None)
     if if_correct_surface:
         fig, axes = plt.subplots(figsize=(12,5), nrows=1, ncols=2, squeeze=False)
     else:
