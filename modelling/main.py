@@ -79,6 +79,10 @@ class grid:
         # set up output dir 
         if not os.path.exists(self.filepath_output): os.mkdir(self.filepath_output)
 
+        # seismic 
+        if self.if_seismic:
+            self.estimators_to_summary = np.concatenate([self.estimators, ['Dnu_freq']])
+
         # surface corrections
         if self.if_seismic & self.if_correct_surface:
             self.surface_estimators = surface_params_dict[self.surface_correction_formula]
@@ -361,7 +365,7 @@ class grid:
             
             # collect samples to produce estimates/corner plots
             samples = []
-            for para in self.estimators:
+            for para in self.estimators_to_summary:
                 samples.append(self.stardata[istar][para])
             samples = np.transpose(np.array(samples))
 
@@ -418,22 +422,22 @@ class grid:
                     # write prob distribution summary file
                     if self.if_classical:
                         results = quantile(samples, (0.16, 0.5, 0.84), weights=prob_classical)
-                        ascii.write(Table(results, names=self.estimators), toutdir+"summary_prob_classical.txt",format="csv", overwrite=True)
+                        ascii.write(Table(results, names=self.estimators_to_summary), toutdir+"summary_prob_classical.txt",format="csv", overwrite=True)
 
                     if self.if_seismic:
                         results = quantile(samples, (0.16, 0.5, 0.84), weights=prob_seismic)
-                        ascii.write(Table(results, names=self.estimators), toutdir+"summary_prob_seismic.txt",format="csv", overwrite=True)
+                        ascii.write(Table(results, names=self.estimators_to_summary), toutdir+"summary_prob_seismic.txt",format="csv", overwrite=True)
 
                     # output the prob (prior excluded)
                     results = quantile(samples, (0.16, 0.5, 0.84), weights=prob)
-                    ascii.write(Table(results, names=self.estimators), toutdir+"summary_prob.txt",format="csv", overwrite=True)
+                    ascii.write(Table(results, names=self.estimators_to_summary), toutdir+"summary_prob.txt",format="csv", overwrite=True)
 
                     # output the best models
                     Nchi2 = len(best_models_chi2s)
                     results = np.concatenate([np.array(best_models_ranked_by).reshape(Nchi2,1), \
                                               np.array(best_models_chi2s).reshape(Nchi2,1), \
                                               samples[best_models_imod,:] ], axis=1)
-                    ascii.write(Table(results, names=np.concatenate([['best_model_by', 'chi2'], self.estimators])), toutdir+"summary_best.txt",format="csv", overwrite=True)
+                    ascii.write(Table(results, names=np.concatenate([['best_model_by', 'chi2'], self.estimators_to_summary])), toutdir+"summary_best.txt",format="csv", overwrite=True)
 
                     # # plot HR diagrams
                     # fig = self.plot_HR_diagrams(samples, self.estimates, zvals=logweights)
