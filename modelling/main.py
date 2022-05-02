@@ -178,11 +178,13 @@ class grid:
 
                     # initialize the variables to calculate & save
                     Dnu_freq = np.zeros(Nmodel, dtype=float) + np.nan
+                    eps = np.zeros(Nmodel, dtype=float) + np.nan
                     diff_freq = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
                     mod_freq = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
                     if self.if_correct_surface:
                         surface_parameters = np.zeros((Nmodel,self.Nsurface), dtype=float) + np.nan
                         Dnu_freq_sc = np.zeros(Nmodel, dtype=float) + np.nan
+                        eps_sc = np.zeros(Nmodel, dtype=float) + np.nan
                         diff_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
                         mod_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
 
@@ -192,12 +194,12 @@ class grid:
                         # retrieve seismic model parameters
                         mode_freq = np.array(atrack[self.col_mode_freq][imod])
                         mode_l = np.array(atrack[self.col_mode_l][imod])
-                        mode_n = np.array(atrack[self.col_mode_n][imod])
+                        mode_n = np.array(atrack[self.col_mode_n][imod]) if ~(self.col_mode_n is None) else np.arange(len(mode_l))
 
                         if len(mode_freq) < len(obs_freq) : continue
 
-                        _, _, _, mode_freq_matched, mode_l_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l)
-                        Dnu_freq[imod] = get_model_Dnu(mode_freq_matched, mode_l_matched, self.Dnu[istar], self.numax[istar])
+                        _, _, _, mode_freq_matched, mode_l_matched, mode_n_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l, mode_n)
+                        Dnu_freq[imod], eps[imod] = get_model_Dnu(mode_freq_matched, mode_l_matched, self.Dnu[istar], self.numax[istar], mode_n_matched)
                         diff_freq[imod, :] = (obs_freq-mode_freq_matched)**2.0
                         mod_freq[imod, :] = mode_freq_matched
 
@@ -218,8 +220,8 @@ class grid:
                                                                             ifFullOutput=True, \
                                                                             Dnu=self.Dnu[istar], numax=self.numax[istar])
 
-                            _, _, _, mode_freq_sc_matched, mode_l_sc_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq_sc, mode_l)
-                            Dnu_freq_sc[imod] = get_model_Dnu(mode_freq_sc_matched, mode_l_sc_matched, self.Dnu[istar], self.numax[istar])
+                            _, _, _, mode_freq_sc_matched, mode_l_sc_matched, mode_n_sc_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq_sc, mode_l, mode_n)
+                            Dnu_freq_sc[imod], eps_sc[imod] = get_model_Dnu(mode_freq_sc_matched, mode_l_sc_matched, self.Dnu[istar], self.numax[istar], mode_n_sc_matched)
                             diff_freq_sc[imod, :] = (obs_freq-mode_freq_sc_matched)**2.0
                             mod_freq_sc[imod, :] = mode_freq_sc_matched
 
@@ -244,11 +246,13 @@ class grid:
                     list_of_stardata[istar]['diff_freq', itrack] = np.array(diff_freq[idx], dtype=float)
                     list_of_stardata[istar]['mod_freq', itrack] = np.array(mod_freq[idx], dtype=float)
                     list_of_stardata[istar]['Dnu_freq', itrack] = np.array(Dnu_freq[idx], dtype=float)
+                    list_of_stardata[istar]['eps', itrack] = np.array(eps[idx], dtype=float)
 
                     if self.if_correct_surface:
                         list_of_stardata[istar]['diff_freq_sc', itrack] = np.array(diff_freq_sc[idx], dtype=float)
                         list_of_stardata[istar]['mod_freq_sc', itrack] = np.array(mod_freq_sc[idx], dtype=float)
                         list_of_stardata[istar]['Dnu_freq_sc', itrack] = np.array(Dnu_freq_sc[idx], dtype=float)
+                        list_of_stardata[istar]['eps_sc', itrack] = np.array(eps_sc[idx], dtype=float)
                         for icol, col in enumerate(self.surface_estimators):
                             list_of_stardata[istar][col, itrack] = np.array(surface_parameters[idx, icol], dtype=float)
 
@@ -478,7 +482,7 @@ class grid:
             if self.if_seismic: 
                 keys = keys + ['chi2_seismic']
                 ls = self.obs_l_uniq[istar]
-                keys = keys + ['Dnu_freq', 'diff_freq', 'mod_freq']
+                keys = keys + ['Dnu_freq', 'eps', 'diff_freq', 'mod_freq']
                 keys = keys + ['chi2_seismic_l{:0.0f}'.format(l) for l in ls]
                 keys = keys + ['chi2_seismic_obs_l{:0.0f}'.format(l) for l in ls]
                 if self.if_add_model_error:
@@ -491,7 +495,7 @@ class grid:
                         keys = keys + ['chi2_seismic_obs_reg_l{:0.0f}'.format(l) for l in ls]
                         keys = keys + ['chi2_seismic_obs_nreg_l{:0.0f}'.format(l) for l in ls]
                 if self.if_correct_surface:
-                    keys = keys + ['diff_freq_sc', 'mod_freq_sc', 'Dnu_freq_sc'] + self.surface_estimators
+                    keys = keys + ['diff_freq_sc', 'eps_sc', 'mod_freq_sc', 'Dnu_freq_sc'] + self.surface_estimators
             self.keys[istar] = keys
 
 

@@ -4,8 +4,7 @@ from scipy.optimize import linear_sum_assignment, curve_fit
 __all__ = ['get_model_Dnu', 'get_obs_Dnu']
 
 
-def get_model_Dnu(mod_freq, mod_l, Dnu, numax, 
-        obs_freq=None, obs_efreq=None, obs_l=None):
+def get_model_Dnu(mod_freq, mod_l, Dnu, numax, mod_n=None):
     
     """
     Calculate model Dnu around numax, by fitting freq vs n with 
@@ -39,54 +38,28 @@ def get_model_Dnu(mod_freq, mod_l, Dnu, numax,
 
     """
 
-    if ((obs_freq is None) | (obs_efreq is None) | (obs_l is None)):
-        ifUseModel = True 
+    # width estimates based on Yu+2018, Lund+2017, Li+2020
+    k, b = 0.9638, -1.7145
+    width = np.exp(k*np.log(numax) + b)
+
+    # assign n
+    l0 = mod_l==0
+    mod_freq_l0 = np.copy(mod_freq)[l0]
+    sidx = np.argsort(mod_freq) 
+    mod_freq_l0 = mod_freq_l0[sidx]
+    mod_n = np.arange(len(mod_freq_l0)) if (mod_n is None) else np.copy(mod_n)[l0][sidx]
+    # print(mod_n, mod_freq_l0)
+    # sigma = 1/np.exp(-(mod_freq_l0-numax)**2./(2*width**2.))
+    weight = np.exp(-(mod_freq_l0-numax)**2./(2*width**2.))
+    idx = weight>1e-100
+    if np.sum(idx)>2:
+        p, _, _, _, _ = np.polyfit(mod_n[idx], mod_freq_l0[idx], 1, w=weight[idx], full=True)
+        mod_Dnu, mod_eps = p[0], p[1]/p[0]
     else:
-        ifUseModel = False
+        mod_Dnu, mod_eps = np.nan, np.nan 
 
-    if ifUseModel:
-        # width estimates based on Yu+2018, Lund+2017, Li+2020
-        k, b = 0.9638, -1.7145
-        width = np.exp(k*np.log(numax) + b)
 
-        # assign n
-        mod_freq_l0 = np.sort(mod_freq[mod_l==0])
-        # mod_n = np.zeros(len(mod_freq_l0))
-        # for imod in range(len(mod_n)-1):
-        #     mod_n[(imod+1):] = mod_n[(imod+1):] + np.round((mod_freq_l0[imod+1]-mod_freq_l0[imod])/Dnu)
-        mod_n = np.arange(len(mod_freq_l0))
-        # sigma = 1/np.exp(-(mod_freq_l0-numax)**2./(2*width**2.))
-        weight = np.exp(-(mod_freq_l0-numax)**2./(2*width**2.))
-        idx = weight>1e-100
-        if np.sum(idx)>2:
-            p = np.polyfit(mod_n[idx], mod_freq_l0[idx], 1, w=weight[idx])
-            mod_Dnu = p[0]
-        else:
-            mod_Dnu = np.nan
-
-    else:
-        # we need to assign each obs mode with a model mode
-        # this can be seen as a linear sum assignment problem, also known as minimun weight matching in bipartite graphs
-        obs_freq_l0, obs_efreq_l0, mod_freq_l0 = obs_freq[obs_l==0], obs_efreq[obs_l==0], mod_freq[mod_l==0]
-        cost = np.abs(obs_freq_l0.reshape(-1,1) - mod_freq_l0)
-        row_ind, col_ind = linear_sum_assignment(cost)
-        obs_freq_l0, obs_efreq_l0 = obs_freq_l0[row_ind], obs_efreq_l0[row_ind]
-        mod_freq_l0 = mod_freq_l0[col_ind]
-
-        idx = np.argsort(mod_freq_l0)
-        mod_freq_l0, obs_freq_l0, obs_efreq_l0 = mod_freq_l0[idx], obs_freq_l0[idx], obs_efreq_l0[idx]
-
-        # assign n
-        mod_freq_l0 = np.sort(mod_freq[mod_l==0])
-        # mod_n = np.zeros(len(mod_freq_l0))
-        # for imod in range(len(mod_n)-1):
-        #     mod_n[(imod+1):] = mod_n[(imod+1):] + np.round((mod_freq_l0[imod+1]-mod_freq_l0[imod])/Dnu)
-        mod_n = np.arange(len(mod_freq_l0))
-        sigma = obs_efreq_l0
-        p = np.polyfit(mod_n, mod_freq_l0, 1, w=1/sigma)  
-        mod_Dnu = p[0]      
-
-    return mod_Dnu
+    return mod_Dnu, mod_eps
 
 
 def get_obs_Dnu(obs_freq, obs_efreq=None, Dnu_guess=None, ifReturnEpsilon=False):

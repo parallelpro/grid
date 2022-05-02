@@ -44,7 +44,7 @@ default_global_params = {
     "col_mode_l": "mode_l", 
     "col_mode_inertia": "mode_inertia", 
     "col_acoustic_cutoff": "acoustic_cutoff", 
-    "col_mode_n": "mode_n", 
+    "col_mode_n": None, 
 
     "if_reduce_seis_chi2": True, 
 

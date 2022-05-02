@@ -37,7 +37,7 @@ user_setup_params = {
 "if_plot_echelle": True,
 # estimator names to appear in corner plots. suggests only keep essentials.
 "estimators_to_plot": ['star_mass', 'luminosity', 'radius', 'Teff', \
-                       'Zinit'], 
+                       'Zinit', 'eps', 'Dnu_freq'], 
 # if True, output top models to an h5 file
 "if_data": True, 
 
