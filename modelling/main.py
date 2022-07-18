@@ -81,12 +81,13 @@ class grid:
 
         # seismic 
         if self.if_seismic:
-            self.estimators_to_summary = np.concatenate([self.estimators, ['Dnu_freq']])
+            self.estimators_to_summary = np.concatenate([self.estimators, ['Dnu_freq', 'eps']])
 
-        # surface corrections
-        if self.if_seismic & self.if_correct_surface:
-            self.surface_estimators = surface_params_dict[self.surface_correction_formula]
-            self.Nsurface = len(self.surface_estimators)
+            # surface corrections
+            if self.if_correct_surface:
+                self.surface_estimators = surface_params_dict[self.surface_correction_formula]
+                self.Nsurface = len(self.surface_estimators)
+                self.estimators_to_summary = np.concatenate([self.estimators_to_summary, ['Dnu_freq_sc', 'eps_sc'], self.surface_estimators])
 
         return 
 
