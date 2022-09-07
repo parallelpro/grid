@@ -95,7 +95,7 @@ class grid:
     def read_data(self):
         # read in starIDs:
         data_stellar_params = pd.read_csv(self.filepath_stellar_params)
-        self.starIDs = data_stellar_params[self.col_starIDs].to_numpy()
+        self.starIDs = data_stellar_params[self.col_starIDs].astype('str').to_numpy()
         self.Nstar = len(self.starIDs)
 
         # read in stellar params 
@@ -362,7 +362,7 @@ class grid:
             #     obs_l_uniq = self.obs_l_uniq[thread_star_idx]
             # Nstar = len(starIDs)
 
-            toutdir = self.filepath_output + '{:0.0f}'.format(self.starIDs[istar]) + '/'
+            toutdir = self.filepath_output + '{:s}'.format(self.starIDs[istar]) + '/'
             if not os.path.exists(toutdir):
                 os.mkdir(toutdir)
             
