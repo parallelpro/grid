@@ -45,7 +45,7 @@ def get_model_Dnu(mod_freq, mod_l, Dnu, numax, mod_n=None):
     # assign n
     l0 = mod_l==0
     mod_freq_l0 = np.copy(mod_freq)[l0]
-    sidx = np.argsort(mod_freq) 
+    sidx = np.argsort(mod_freq_l0) 
     mod_freq_l0 = mod_freq_l0[sidx]
     mod_n = np.arange(len(mod_freq_l0)) if (mod_n is None) else np.copy(mod_n)[l0][sidx]
     # print(mod_n, mod_freq_l0)
