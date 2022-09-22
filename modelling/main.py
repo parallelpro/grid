@@ -96,7 +96,8 @@ class grid:
     def read_data(self):
         # read in starIDs:
         data_stellar_params = pd.read_csv(self.filepath_stellar_params)
-        self.starIDs = data_stellar_params[self.col_starIDs].astype('str').to_numpy()
+        data_stellar_params[self.col_starIDs] = data_stellar_params[self.col_starIDs].astype('str')
+        self.starIDs = data_stellar_params[self.col_starIDs].to_numpy()
         self.Nstar = len(self.starIDs)
 
         # read in stellar params 
@@ -115,6 +116,7 @@ class grid:
                 self.mod_e_freq = data_stellar_params[self.col_model_error].to_numpy()
                 
             data_stellar_freqs = pd.read_csv(self.filepath_stellar_freqs)
+            data_stellar_freqs[self.col_starIDs] = data_stellar_freqs[self.col_starIDs].astype('str')
 
             self.obs_freq, self.obs_e_freq, self.obs_l = [np.empty(self.Nstar, dtype=object) for i in range(3)]
             for istar in range(self.Nstar):
