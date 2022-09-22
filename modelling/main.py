@@ -202,9 +202,9 @@ class grid:
 
                         if len(mode_freq) < len(obs_freq) : continue
 
-                        _, _, _, mode_freq_matched, mode_l_matched, mode_n_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l, mode_n)
+                        obs_freq_matched, _, _, mode_freq_matched, mode_l_matched, mode_n_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l, mode_n)
                         Dnu_freq[imod], eps[imod] = get_model_Dnu(mode_freq_matched, mode_l_matched, self.Dnu[istar], self.numax[istar], mode_n_matched)
-                        diff_freq[imod, :] = (obs_freq-mode_freq_matched)**2.0
+                        diff_freq[imod, :] = (obs_freq_matched-mode_freq_matched)**2.0
                         mod_freq[imod, :] = mode_freq_matched
 
                         # get 1) Dnu, 2) squared differences, 
@@ -224,9 +224,9 @@ class grid:
                                                                             ifFullOutput=True, \
                                                                             Dnu=self.Dnu[istar], numax=self.numax[istar])
 
-                            _, _, _, mode_freq_sc_matched, mode_l_sc_matched, mode_n_sc_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq_sc, mode_l, mode_n)
+                            obs_freq_matched, _, _, mode_freq_sc_matched, mode_l_sc_matched, mode_n_sc_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq_sc, mode_l, mode_n)
                             Dnu_freq_sc[imod], eps_sc[imod] = get_model_Dnu(mode_freq_sc_matched, mode_l_sc_matched, self.Dnu[istar], self.numax[istar], mode_n_sc_matched)
-                            diff_freq_sc[imod, :] = (obs_freq-mode_freq_sc_matched)**2.0
+                            diff_freq_sc[imod, :] = (obs_freq_matched-mode_freq_sc_matched)**2.0
                             mod_freq_sc[imod, :] = mode_freq_sc_matched
 
                     idx_seismic = (np.abs((Dnu_freq-self.Dnu[istar])/self.Dnu[istar])<0.2 )
