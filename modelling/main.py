@@ -383,6 +383,11 @@ class grid:
             # locate best models
             # print(self.stardata[istar]['chi2'], self.stardata[istar]['chi2_seismic'])
             chi2 = self.stardata[istar]['chi2']
+            if len(chi2) <= 5:
+                f = open(toutdir+'log.txt', 'w')
+                f.write("Parameter estimation failed because fewer than 5 models have been selected.")
+                f.close()
+                continue
             prob = np.exp(-chi2/2.)
             best_models_ranked_by = ['chi2']
             best_models_imod = [np.nanargmax(prob)]
