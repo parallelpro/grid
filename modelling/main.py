@@ -80,8 +80,9 @@ class grid:
         if not os.path.exists(self.filepath_output): os.mkdir(self.filepath_output)
 
         # seismic 
+        self.estimators_to_summary = np.array(self.estimators)
         if self.if_seismic:
-            self.estimators_to_summary = np.concatenate([self.estimators, ['Dnu_freq', 'eps']])
+            self.estimators_to_summary = np.concatenate([self.estimators_to_summary, ['Dnu_freq', 'eps']])
 
             # surface corrections
             if self.if_correct_surface:
