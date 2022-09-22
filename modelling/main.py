@@ -203,6 +203,9 @@ class grid:
                         if len(mode_freq) < len(obs_freq) : continue
 
                         obs_freq_matched, _, _, mode_freq_matched, mode_l_matched, mode_n_matched = match_modes(obs_freq, obs_e_freq, obs_l, mode_freq, mode_l, mode_n)
+
+                        if len(mode_freq_matched) < len(obs_freq): continue
+
                         Dnu_freq[imod], eps[imod] = get_model_Dnu(mode_freq_matched, mode_l_matched, self.Dnu[istar], self.numax[istar], mode_n_matched)
                         diff_freq[imod, :] = (obs_freq_matched-mode_freq_matched)**2.0
                         mod_freq[imod, :] = mode_freq_matched
