@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from modelling import grid
+from src import grid
 from astropy.table import Table
 import h5py
 

@@ -93,12 +93,17 @@ user_setup_params = {
 
 # if True, then add systematic uncertainties in the seismic chi2 
 "if_add_model_error": True,
-# 1 or 2: 
+# 1, 2, or 3: 
 # 1 - choose the rms frequency difference of the model at 10 percentile (sorted by chi2).
 # ``rescale_percentile'' must be set.
-# 2 - set by the column in the filepath_stellar_params file
+# 2 - set by the column in the filepath_stellar_params file 
+# the error set by the column will be added in quadrature
 # ``col_model_error'' must be set.
-"add_model_error_method": 2, 
+# 3 - set by the column in the filepath_stellar_params file 
+# the errors of all modes will be multiplied by a rescaling factor such that the smallest observational error
+# equals to this value provided in the file.
+# ``col_model_error'' must be set.
+"add_model_error_method": 3, 
 # used to evaluate the systematic uncertainties. the model rms frequency difference at below percentile 
 "rescale_percentile": 10, 
 # used to set the systematic uncertainties from the filepath_stellar_params file
