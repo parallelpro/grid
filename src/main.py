@@ -166,7 +166,7 @@ class grid:
                     # classical observables
                     mod_params = np.array([atrack[col] for col in self.observables]).T.reshape(Nmodel,-1)
                     chi2_classical = np.sum((self.obs_params[istar]-mod_params)**2.0/(self.e_obs_params[istar]**2.0), axis=1)#/(Nobservable)
-                    idx_classical = chi2_classical < 25. # 5-sigma
+                    idx_classical = chi2_classical < 16. # 4-sigma
                 else:
                     idx_classical = True # all
 
