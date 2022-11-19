@@ -89,6 +89,8 @@ user_setup_params = {
 "if_correct_surface": True, 
 # cubic/combined/kjeldsen, bg14/bg14/k+08
 "surface_correction_formula": "cubic", 
+# if True, discard models with the positive amount of surface correction.
+"require_negative_surface_correction": True,
 
 
 # if True, then add systematic uncertainties in the seismic chi2 

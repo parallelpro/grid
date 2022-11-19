@@ -232,9 +232,10 @@ class grid:
                             diff_freq_sc[imod, :] = (obs_freq_matched-mode_freq_sc_matched)**2.0
                             mod_freq_sc[imod, :] = mode_freq_sc_matched
 
-                    idx_seismic = (np.abs((Dnu_freq-self.Dnu[istar])/self.Dnu[istar])<0.2 )
+                    idx_seismic = (np.abs((Dnu_freq-self.Dnu[istar])/self.Dnu[istar])<0.15 )
                     if self.if_correct_surface: idx_seismic = idx_seismic & np.isfinite(Dnu_freq_sc)
-
+                    if self.if_correct_surface & self.require_negative_surface_correction: 
+                        idx_seismic = idx_seismic & (np.sum(mod_freq_sc - mod_freq > 0, axis=1) == 0 )
                 else:
                     idx_seismic = True
 
