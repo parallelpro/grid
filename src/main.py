@@ -236,6 +236,11 @@ class grid:
                     if self.if_correct_surface: idx_seismic = idx_seismic & np.isfinite(Dnu_freq_sc)
                     if self.if_correct_surface & self.require_negative_surface_correction: 
                         idx_seismic = idx_seismic & (np.sum(mod_freq_sc - mod_freq > 0, axis=1) == 0 )
+                    if self.if_correct_surface & self.require_absolute_surface_correction_increase_with_nu & (0 in obs_l_unique):
+                        idx_upper_nu = np.argmax(obs_freq[obs_l==0])
+                        idx_lower_nu = np.argmin(obs_freq[obs_l==0])
+                        diff_freq_l0 = mod_freq_sc[:, obs_l==0] - mod_freq[:, obs_l==0]
+                        idx_seismic = idx_seismic & (np.abs(diff_freq_l0[:, idx_upper_nu]) - np.abs(diff_freq_l0[:, idx_lower_nu]) > 0)
                 else:
                     idx_seismic = True
 
