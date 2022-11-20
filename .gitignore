@@ -1,7 +1,11 @@
 demo.ipynb
 __pycache__/
-test_models/*.h5
+test_models/*
 test_output/*
+test_samples/*
+results*
+inputs*
+1_*
 .DS_Store
 .ipynb_checkpoints
 time_comsumption.txt
