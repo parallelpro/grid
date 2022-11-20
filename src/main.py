@@ -192,8 +192,8 @@ class grid:
                         diff_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
                         mod_freq_sc = np.zeros((Nmodel, Nmode), dtype=float) + np.nan
 
-
-                    for imod in range(Nmodel):
+                    
+                    for imod in np.arange(0, Nmodel)[idx_classical]:
                         # get 1) Dnu from frquencies, 2) squared differences
                         # retrieve seismic model parameters
                         mode_freq = np.array(atrack[self.col_mode_freq][imod])
