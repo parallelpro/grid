@@ -213,7 +213,7 @@ class grid:
                         # get 1) Dnu, 2) squared differences, 
                         # but for the surface correction version, if there is any
                         if (self.if_correct_surface) & \
-                            (np.abs((Dnu_freq[imod]-self.Dnu[istar])/self.Dnu[istar])<0.2 ) & \
+                            (np.abs((Dnu_freq[imod]-self.Dnu[istar])/self.Dnu[istar])<0.15 ) & \
                             (np.sum(np.isin(mode_l, 0))) :
 
                             # retrieve seismic model parameters
